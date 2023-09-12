@@ -4,8 +4,9 @@ This is a small module for use of ESP32 with a sub-GHZ transceiver, mainly inten
 
 ## Hardware
 
-The module looks like the follwoing.
-![image](https://github.com/the78mole/moles-integ-dtu-hw/assets/7723396/98449279-77cc-404b-b1d4-140c5b9ee6dd)
+The module looks like the following.
+
+![image](img/3drender.png)
 
 You can find the schematics in the docs folder.
 
