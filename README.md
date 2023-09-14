@@ -15,3 +15,10 @@ You can also access the [iBom](https://htmlpreview.github.io/?https://github.com
 ## Software
 
 You can deploy [OpenDTU](https://github.com/tbnobody/OpenDTU) or [AhoyDTU](https://github.com/lumapu/ahoy/) on it and you can assemble the RF-Part or add one of the NRF24L01+ modules from many sources to it. Just ensure, that the pinout it matching the one on this board.
+
+## Improvements
+
+### Add PA+LNA to RF side
+
+To increase the performance of the module, as you can buy modules from different suppliers, there could be added a PA+LNA RF frontend. 
+You can find [more information on instructables](https://www.instructables.com/How-to-Build-Your-Own-NRF24L01palna-Module/).
