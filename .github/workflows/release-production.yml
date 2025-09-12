@@ -2,7 +2,7 @@ name: Generate Production Files
 
 on:
   release:
-    types: [created, published]
+    types: [published]
   workflow_dispatch:
     inputs:
       release_tag:
@@ -17,6 +17,7 @@ permissions:
 jobs:
   generate-production-files:
     runs-on: ubuntu-latest
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     container: 
       image: ghcr.io/the78mole/kicaddev:latest
       credentials:
