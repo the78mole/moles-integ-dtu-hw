@@ -1,0 +1,74 @@
+name: Semantic Versioning
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  semantic-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      version_tag: ${{ steps.version.outputs.version_tag }}
+      changed: ${{ steps.version.outputs.changed }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Semantic Version
+        id: version
+        uses: paulhatch/semantic-version@v5.4.0
+        with:
+          # The prefix to use to identify tags
+          tag_prefix: "v"
+          # A string which, if present in a git commit, indicates that a change represents a
+          # major (breaking) change, supports regular expressions wrapped with '/'
+          major_pattern: "(feat|fix)!:"
+          # A string which indicates the flags used by the `major_pattern` regular expression. Optional; defaults to "gm".
+          major_regexp_flags: "gm"
+          # Same as above except indicating a minor change, supports regular expressions wrapped with '/'
+          minor_pattern: "(feat|fix):"
+          # A string which indicates the flags used by the `minor_pattern` regular expression. Optional; defaults to "gm".
+          minor_regexp_flags: "gm"
+          # A string to determine the format of the version output
+          version_format: "${major}.${minor}.${patch}"
+          # If this is set to true, *every* commit will be treated as a new version.
+          bump_each_commit: true
+          # If bump_each_commit is also set to true, setting this value will cause the version to increment only if the pattern specified is matched.
+          bump_each_commit_patch_pattern: ""
+          # If true, the body of commits will also be searched for major/minor patterns to determine the version type.
+          search_commit_body: false
+          # The output method used to generate list of users, 'csv' or 'json'.
+          user_format_type: "csv"
+          # Prevents pre-v1.0.0 version from automatically incrementing the major version.
+          # If enabled, when the major version is 0, major releases will be treated as minor and minor as patch. Note that the version_type output is unchanged.
+          enable_prerelease_mode: false
+          # If enabled, diagnostic information will be added to the action output.
+          debug: false
+
+      - name: Create Git Tag
+        if: steps.version.outputs.changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "${{ steps.version.outputs.version_tag }}" -m "Release ${{ steps.version.outputs.version_tag }}"
+          git push origin "${{ steps.version.outputs.version_tag }}"
+
+      - name: Create Release
+        if: steps.version.outputs.changed == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version_tag }}
+          name: Release ${{ steps.version.outputs.version_tag }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

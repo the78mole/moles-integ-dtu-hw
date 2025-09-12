@@ -1,0 +1,110 @@
+name: PR Production File Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  packages: read
+  pull-requests: write
+
+jobs:
+  generate-pr-production-files:
+    runs-on: ubuntu-latest
+    container: 
+      image: ghcr.io/the78mole/kicaddev:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Generate production files
+        run: |
+          echo "Starting production file generation for PR #${{ github.event.number }}..."
+          ls -la
+          echo "Project files found:"
+          find . -name "*.kicad_*" -type f
+          
+          # Run the kicad export script
+          kicad_export ./Moles-Integ-DTU-HW.kicad_pro
+          
+          echo "Production files generated:"
+          find ./production -type f
+          
+      - name: Create production archive
+        run: |
+          cd production
+          # Create a comprehensive production archive
+          zip -r "../Moles-Integ-DTU-HW-production-pr${{ github.event.number }}.zip" .
+          cd ..
+          
+      - name: Upload production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-files-pr${{ github.event.number }}
+          path: |
+            production/
+            Moles-Integ-DTU-HW-production-pr${{ github.event.number }}.zip
+          retention-days: 30
+
+      - name: Comment on PR with artifact links
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.issue.number;
+            const runId = context.runId;
+            const repo = context.repo;
+            
+            const comment = `## 🔧 Production Files Generated
+            
+            Production files have been successfully generated for this PR and are available as workflow artifacts.
+            
+            ### 📦 Available Files
+            - **Manufacturing ZIP**: Complete Gerber + drill package for PCB manufacturers
+            - **PDF Documentation**: Schematic and PCB layout PDFs
+            - **3D STEP Model**: For mechanical integration and visualization
+            - **Interactive HTML BOM**: Assembly reference with component placement
+            - **Individual Gerber Files**: All PCB layers (copper, silkscreen, soldermask, paste)
+            - **Drill Files**: Excellon format for drilling operations
+            
+            ### 🔗 Download Artifacts
+            [📁 Download Production Files](https://github.com/${repo.owner}/${repo.repo}/actions/runs/${runId})
+            
+            The artifacts will be available for 30 days. Production files are automatically generated using the same KiCadDev Docker environment used for releases.
+            
+            ---
+            *This comment is automatically updated when new commits are pushed to this PR.*`;
+            
+            // Check if we already commented on this PR
+            const comments = await github.rest.issues.listComments({
+              owner: repo.owner,
+              repo: repo.repo,
+              issue_number: prNumber,
+            });
+            
+            const botComment = comments.data.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('🔧 Production Files Generated')
+            );
+            
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: repo.owner,
+                repo: repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: repo.owner,
+                repo: repo.repo,
+                issue_number: prNumber,
+                body: comment
+              });
+            }
