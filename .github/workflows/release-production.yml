@@ -10,6 +10,18 @@ on:
         required: false
         type: string
 
+name: Generate Production Files
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag to attach files to (optional)"
+        required: false
+        type: string
+
 permissions:
   contents: write
   packages: read
@@ -25,6 +37,13 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     
     steps:
+      - name: Debug event information
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Event action: ${{ github.event.action }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Should run: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}"
+          
       - name: Checkout repository
         uses: actions/checkout@v4
         
