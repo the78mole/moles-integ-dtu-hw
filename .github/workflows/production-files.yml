@@ -1,0 +1,58 @@
+name: Production Files
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: read
+
+jobs:
+  production:
+    runs-on: ubuntu-latest
+    container: 
+      image: ghcr.io/the78mole/kicaddev:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Generate files
+        run: |
+          echo "Generating production files..."
+          ls -la
+          find . -name "*.kicad_*" -type f
+          kicad_export ./Moles-Integ-DTU-HW.kicad_pro
+          echo "Files generated:"
+          find ./production -type f 2>/dev/null || echo "No production directory found"
+          
+      - name: Create archive
+        run: |
+          if [ -d "production" ]; then
+            cd production
+            zip -r "../production-files.zip" .
+            cd ..
+            echo "Archive created successfully"
+          else
+            echo "No production directory to archive"
+          fi
+          
+      - name: Upload to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: production-files.zip
+          tag_name: ${{ github.event.release.tag_name }}
+          
+      - name: Upload artifacts
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-files
+          path: production-files.zip
+          retention-days: 30
