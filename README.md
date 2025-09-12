@@ -489,6 +489,8 @@ Commercial use is permitted under the TAPR OHL, but please review the full licen
 ### Official Documentation
 - **Schematics**: [PDF Documentation](docs/Moles-Integ-DTU-HW.pdf)
 - **Interactive BOM**: [iBOM Tool](https://htmlpreview.github.io/?https://github.com/the78mole/moles-integ-dtu-hw/blob/main/docs/ibom.html)
+- **Production Workflow**: [Automated Production Files](docs/PRODUCTION_WORKFLOW.md)
+- **Versioning & CI/CD**: [Semantic Versioning and Workflows](docs/VERSIONING_AND_CI.md)
 - **KiCad Files**: Complete project files in repository
 
 ### Related Projects
