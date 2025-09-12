@@ -39,7 +39,7 @@ This is a specialized integration module that combines an ESP32 microcontroller 
 | **Microcontroller** | ESP32-WROOM-32 | Dual-core Xtensa LX6, WiFi & Bluetooth |
 | **RF Transceiver** | NRF24L01+ | 2.4GHz ISM band, up to 2Mbps |
 | **Power Supply** | 3.3V/5V compatible | On-board voltage regulation |
-| **Flash Memory** | 4MB (ESP32 internal) | Program and data storage |
+| **Flash Memory** | 4-16MB (ESP32 internal) | Program and data storage, depending on chosen WROOM-Module |
 | **RAM** | 520KB (ESP32 internal) | SRAM for program execution |
 
 ### Physical Specifications
